@@ -42,6 +42,42 @@ void activate(GtkApplication* app, gpointer user_data) {
     gtk_widget_show(clear_item);
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), clear_item);
     
+    // Separator
+    GtkWidget *separator = gtk_separator_menu_item_new();
+    gtk_widget_show(separator);
+    gtk_menu_shell_append(GTK_MENU_SHELL(menu), separator);
+    
+    // System Monitor menu items
+    GtkWidget *system_monitor_item = gtk_menu_item_new_with_label("System Monitor");
+    g_signal_connect(system_monitor_item, "activate", G_CALLBACK(on_system_monitor_clicked), app_data);
+    gtk_widget_show(system_monitor_item);
+    gtk_menu_shell_append(GTK_MENU_SHELL(menu), system_monitor_item);
+    
+    GtkWidget *process_manager_item = gtk_menu_item_new_with_label("Process Manager");
+    g_signal_connect(process_manager_item, "activate", G_CALLBACK(on_process_manager_clicked), app_data);
+    gtk_widget_show(process_manager_item);
+    gtk_menu_shell_append(GTK_MENU_SHELL(menu), process_manager_item);
+    
+    GtkWidget *memory_monitor_item = gtk_menu_item_new_with_label("Memory Monitor");
+    g_signal_connect(memory_monitor_item, "activate", G_CALLBACK(on_memory_monitor_clicked), app_data);
+    gtk_widget_show(memory_monitor_item);
+    gtk_menu_shell_append(GTK_MENU_SHELL(menu), memory_monitor_item);
+    
+    GtkWidget *filesystem_monitor_item = gtk_menu_item_new_with_label("Filesystem Monitor");
+    g_signal_connect(filesystem_monitor_item, "activate", G_CALLBACK(on_filesystem_monitor_clicked), app_data);
+    gtk_widget_show(filesystem_monitor_item);
+    gtk_menu_shell_append(GTK_MENU_SHELL(menu), filesystem_monitor_item);
+    
+    GtkWidget *network_info_item = gtk_menu_item_new_with_label("Network Info");
+    g_signal_connect(network_info_item, "activate", G_CALLBACK(on_network_info_clicked), app_data);
+    gtk_widget_show(network_info_item);
+    gtk_menu_shell_append(GTK_MENU_SHELL(menu), network_info_item);
+    
+    GtkWidget *disk_usage_item = gtk_menu_item_new_with_label("Disk Usage");
+    g_signal_connect(disk_usage_item, "activate", G_CALLBACK(on_disk_usage_clicked), app_data);
+    gtk_widget_show(disk_usage_item);
+    gtk_menu_shell_append(GTK_MENU_SHELL(menu), disk_usage_item);
+    
     // Show the menu
     gtk_widget_show_all(menu);
     

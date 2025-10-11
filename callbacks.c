@@ -172,3 +172,102 @@ void on_window_destroy(GtkWidget *widget, gpointer user_data) {
     AppData *app_data = user_data;
     destroy_app_data(app_data);
 }
+
+// Network Information Menu Callback  
+void on_network_info_clicked(GtkMenuItem *menuitem, gpointer user_data) {
+    AppData *app = (AppData *)user_data;
+    
+    GtkWidget *dialog = gtk_dialog_new_with_buttons("Network Information",
+                                                     GTK_WINDOW(app->window),
+                                                     GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+                                                     "_Close", GTK_RESPONSE_CLOSE,
+                                                     NULL);
+    
+    gtk_window_set_default_size(GTK_WINDOW(dialog), 500, 400);
+    
+    GtkWidget *content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+    GtkWidget *scrolled = gtk_scrolled_window_new(NULL, NULL);
+    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled),
+                                   GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+    
+    GtkWidget *textview = gtk_text_view_new();
+    gtk_text_view_set_editable(GTK_TEXT_VIEW(textview), FALSE);
+    GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(textview));
+    
+    // Capture network info output
+    FILE *temp_stdout = freopen("/tmp/network_info.txt", "w", stdout);
+    display_network_info();
+    fclose(temp_stdout);
+    freopen("/dev/tty", "w", stdout); // Restore stdout
+    
+    // Read and display the captured output
+    FILE *file = fopen("/tmp/network_info.txt", "r");
+    if (file) {
+        char line[256];
+        GtkTextIter iter;
+        gtk_text_buffer_get_end_iter(buffer, &iter);
+        
+        while (fgets(line, sizeof(line), file)) {
+            gtk_text_buffer_insert(buffer, &iter, line, -1);
+        }
+        fclose(file);
+        unlink("/tmp/network_info.txt");
+    }
+    
+    gtk_container_add(GTK_CONTAINER(scrolled), textview);
+    gtk_container_add(GTK_CONTAINER(content_area), scrolled);
+    
+    gtk_widget_show_all(dialog);
+    gtk_dialog_run(GTK_DIALOG(dialog));
+    gtk_widget_destroy(dialog);
+}
+
+// Disk Usage Menu Callback
+void on_disk_usage_clicked(GtkMenuItem *menuitem, gpointer user_data) {
+    AppData *app = (AppData *)user_data;
+    
+    GtkWidget *dialog = gtk_dialog_new_with_buttons("Disk Usage Information",
+                                                     GTK_WINDOW(app->window),
+                                                     GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+                                                     "_Close", GTK_RESPONSE_CLOSE,
+                                                     NULL);
+    
+    gtk_window_set_default_size(GTK_WINDOW(dialog), 500, 400);
+    
+    GtkWidget *content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+    GtkWidget *scrolled = gtk_scrolled_window_new(NULL, NULL);
+    GtkWidget *textview = gtk_text_view_new();
+    gtk_text_view_set_editable(GTK_TEXT_VIEW(textview), FALSE);
+    GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(textview));
+    
+    // Add filesystem analysis for common mount points
+    GtkTextIter iter;
+    gtk_text_buffer_get_end_iter(buffer, &iter);
+    
+    // Capture filesystem info
+    FILE *temp_stdout = freopen("/tmp/disk_info.txt", "w", stdout);
+    analyze_filesystem("/");
+    analyze_filesystem("/home");
+    analyze_filesystem("/tmp");
+    display_disk_io_stats();
+    fclose(temp_stdout);
+    freopen("/dev/tty", "w", stdout);
+    
+    // Read and display
+    FILE *file = fopen("/tmp/disk_info.txt", "r");
+    if (file) {
+        char line[256];
+        while (fgets(line, sizeof(line), file)) {
+            gtk_text_buffer_insert(buffer, &iter, line, -1);
+        }
+        fclose(file);
+        unlink("/tmp/disk_info.txt");
+    }
+    
+    gtk_container_add(GTK_CONTAINER(scrolled), textview);
+    gtk_container_add(GTK_CONTAINER(content_area), scrolled);
+    
+    gtk_widget_show_all(dialog);
+    gtk_dialog_run(GTK_DIALOG(dialog));
+    gtk_widget_destroy(dialog);
+}

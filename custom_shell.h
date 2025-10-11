@@ -73,4 +73,49 @@ void start_voice_recognition(AppData *app);
 void stop_voice_recognition(AppData *app);
 char* recognize_speech_from_mic(void);
 
+// Kernel-level function declarations
+typedef struct {
+    int pid;
+    char name[256];
+    char state;
+    int ppid;
+    float cpu_percent;
+    long memory_kb;
+    char user[64];
+} ProcessInfo;
+
+// System Information Functions
+void display_system_info(void);
+void display_memory_info(void);
+void display_cpu_info(void);
+void display_network_info(void);
+void analyze_filesystem(const char *path);
+void display_loaded_modules(void);
+void display_disk_io_stats(void);
+void display_temperature_info(void);
+
+// Process Management Functions
+void list_processes_detailed(void);
+int kill_process_by_pid(int pid);
+int get_process_list(ProcessInfo **processes);
+void monitor_syscalls(int pid, int duration_seconds);
+
+// Real-time Statistics
+void get_realtime_stats(double *cpu_usage, double *memory_usage);
+
+// GTK Integration Functions
+GtkWidget* create_system_info_dialog(GtkWindow *parent);
+GtkWidget* create_memory_info_dialog(GtkWindow *parent);
+GtkWidget* create_filesystem_dialog(GtkWindow *parent);
+GtkWidget* create_process_manager_dialog(GtkWindow *parent);
+void show_system_monitor(AppData *app);
+
+// Menu callback for System Monitor
+void on_system_monitor_clicked(GtkMenuItem *menuitem, gpointer user_data);
+void on_memory_monitor_clicked(GtkMenuItem *menuitem, gpointer user_data);
+void on_filesystem_monitor_clicked(GtkMenuItem *menuitem, gpointer user_data);
+void on_process_manager_clicked(GtkMenuItem *menuitem, gpointer user_data);
+void on_network_info_clicked(GtkMenuItem *menuitem, gpointer user_data);
+void on_disk_usage_clicked(GtkMenuItem *menuitem, gpointer user_data);
+
 #endif // CUSTOM_SHELL_H
