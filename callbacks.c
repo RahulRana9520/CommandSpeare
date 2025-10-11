@@ -183,15 +183,23 @@ void on_network_info_clicked(GtkMenuItem *menuitem, gpointer user_data) {
                                                      "_Close", GTK_RESPONSE_CLOSE,
                                                      NULL);
     
-    gtk_window_set_default_size(GTK_WINDOW(dialog), 500, 400);
+    gtk_window_set_default_size(GTK_WINDOW(dialog), 600, 500);
+    gtk_window_set_resizable(GTK_WINDOW(dialog), TRUE);
     
     GtkWidget *content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+    
+    // Create scrolled window with proper expansion
     GtkWidget *scrolled = gtk_scrolled_window_new(NULL, NULL);
     gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled),
                                    GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+    gtk_widget_set_hexpand(scrolled, TRUE);
+    gtk_widget_set_vexpand(scrolled, TRUE);
     
     GtkWidget *textview = gtk_text_view_new();
     gtk_text_view_set_editable(GTK_TEXT_VIEW(textview), FALSE);
+    gtk_text_view_set_monospace(GTK_TEXT_VIEW(textview), TRUE);
+    gtk_widget_set_hexpand(textview, TRUE);
+    gtk_widget_set_vexpand(textview, TRUE);
     GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(textview));
     
     // Capture network info output
@@ -215,7 +223,7 @@ void on_network_info_clicked(GtkMenuItem *menuitem, gpointer user_data) {
     }
     
     gtk_container_add(GTK_CONTAINER(scrolled), textview);
-    gtk_container_add(GTK_CONTAINER(content_area), scrolled);
+    gtk_box_pack_start(GTK_BOX(content_area), scrolled, TRUE, TRUE, 0);
     
     gtk_widget_show_all(dialog);
     gtk_dialog_run(GTK_DIALOG(dialog));
@@ -232,12 +240,23 @@ void on_disk_usage_clicked(GtkMenuItem *menuitem, gpointer user_data) {
                                                      "_Close", GTK_RESPONSE_CLOSE,
                                                      NULL);
     
-    gtk_window_set_default_size(GTK_WINDOW(dialog), 500, 400);
+    gtk_window_set_default_size(GTK_WINDOW(dialog), 600, 500);
+    gtk_window_set_resizable(GTK_WINDOW(dialog), TRUE);
     
     GtkWidget *content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+    
+    // Create scrolled window with proper expansion
     GtkWidget *scrolled = gtk_scrolled_window_new(NULL, NULL);
+    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled),
+                                   GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+    gtk_widget_set_hexpand(scrolled, TRUE);
+    gtk_widget_set_vexpand(scrolled, TRUE);
+    
     GtkWidget *textview = gtk_text_view_new();
     gtk_text_view_set_editable(GTK_TEXT_VIEW(textview), FALSE);
+    gtk_text_view_set_monospace(GTK_TEXT_VIEW(textview), TRUE);
+    gtk_widget_set_hexpand(textview, TRUE);
+    gtk_widget_set_vexpand(textview, TRUE);
     GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(textview));
     
     // Add filesystem analysis for common mount points
@@ -265,7 +284,7 @@ void on_disk_usage_clicked(GtkMenuItem *menuitem, gpointer user_data) {
     }
     
     gtk_container_add(GTK_CONTAINER(scrolled), textview);
-    gtk_container_add(GTK_CONTAINER(content_area), scrolled);
+    gtk_box_pack_start(GTK_BOX(content_area), scrolled, TRUE, TRUE, 0);
     
     gtk_widget_show_all(dialog);
     gtk_dialog_run(GTK_DIALOG(dialog));

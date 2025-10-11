@@ -383,10 +383,23 @@ GtkWidget* create_system_info_dialog(GtkWindow *parent) {
     gtk_window_set_resizable(GTK_WINDOW(dialog), TRUE);
     
     content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+    
+    // Create scrolled window to fill the entire dialog
+    GtkWidget *scrolled_main = gtk_scrolled_window_new(NULL, NULL);
+    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled_main),
+                                   GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+    gtk_widget_set_hexpand(scrolled_main, TRUE);
+    gtk_widget_set_vexpand(scrolled_main, TRUE);
+    gtk_container_add(GTK_CONTAINER(content_area), scrolled_main);
+    
     grid = gtk_grid_new();
-    gtk_grid_set_row_spacing(GTK_GRID(grid), 10);
+    gtk_grid_set_row_spacing(GTK_GRID(grid), 15);
     gtk_grid_set_column_spacing(GTK_GRID(grid), 20);
-    gtk_container_add(GTK_CONTAINER(content_area), grid);
+    gtk_widget_set_margin_top(grid, 20);
+    gtk_widget_set_margin_bottom(grid, 20);
+    gtk_widget_set_margin_left(grid, 20);
+    gtk_widget_set_margin_right(grid, 20);
+    gtk_container_add(GTK_CONTAINER(scrolled_main), grid);
     
     // System information
     sysinfo(&info);
@@ -472,19 +485,27 @@ GtkWidget* create_process_manager_dialog(GtkWindow *parent) {
                                          "_Close", GTK_RESPONSE_CLOSE,
                                          NULL);
     
-    gtk_window_set_default_size(GTK_WINDOW(dialog), 900, 700);
+    gtk_window_set_default_size(GTK_WINDOW(dialog), 1000, 700);
     gtk_window_set_resizable(GTK_WINDOW(dialog), TRUE);
     
     content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
     
-    // Create scrolled window
+    // Create scrolled window that fills entire dialog
     scrolled = gtk_scrolled_window_new(NULL, NULL);
     gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled),
                                    GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+    gtk_widget_set_hexpand(scrolled, TRUE);
+    gtk_widget_set_vexpand(scrolled, TRUE);
+    gtk_widget_set_margin_top(scrolled, 10);
+    gtk_widget_set_margin_bottom(scrolled, 10);
+    gtk_widget_set_margin_left(scrolled, 10);
+    gtk_widget_set_margin_right(scrolled, 10);
     gtk_container_add(GTK_CONTAINER(content_area), scrolled);
     
     // Create list box
     listbox = gtk_list_box_new();
+    gtk_widget_set_hexpand(listbox, TRUE);
+    gtk_widget_set_vexpand(listbox, TRUE);
     gtk_container_add(GTK_CONTAINER(scrolled), listbox);
     
     // Get process list
@@ -593,20 +614,29 @@ GtkWidget* create_memory_info_dialog(GtkWindow *parent) {
                                          "_Close", GTK_RESPONSE_CLOSE,
                                          NULL);
     
-    gtk_window_set_default_size(GTK_WINDOW(dialog), 600, 500);
+    gtk_window_set_default_size(GTK_WINDOW(dialog), 700, 600);
     gtk_window_set_resizable(GTK_WINDOW(dialog), TRUE);
     
     content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
     
-    // Create scrolled window with text view
+    // Create scrolled window with text view that fills entire dialog
     scrolled = gtk_scrolled_window_new(NULL, NULL);
     gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled),
                                    GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+    gtk_widget_set_hexpand(scrolled, TRUE);
+    gtk_widget_set_vexpand(scrolled, TRUE);
+    gtk_widget_set_margin_top(scrolled, 10);
+    gtk_widget_set_margin_bottom(scrolled, 10);
+    gtk_widget_set_margin_left(scrolled, 10);
+    gtk_widget_set_margin_right(scrolled, 10);
     gtk_container_add(GTK_CONTAINER(content_area), scrolled);
     
     textview = gtk_text_view_new();
     gtk_text_view_set_editable(GTK_TEXT_VIEW(textview), FALSE);
     gtk_text_view_set_monospace(GTK_TEXT_VIEW(textview), TRUE);
+    gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(textview), GTK_WRAP_WORD);
+    gtk_widget_set_hexpand(textview, TRUE);
+    gtk_widget_set_vexpand(textview, TRUE);
     gtk_container_add(GTK_CONTAINER(scrolled), textview);
     
     // Read memory information
@@ -643,20 +673,29 @@ GtkWidget* create_filesystem_dialog(GtkWindow *parent) {
                                          "_Close", GTK_RESPONSE_CLOSE,
                                          NULL);
     
-    gtk_window_set_default_size(GTK_WINDOW(dialog), 600, 500);
+    gtk_window_set_default_size(GTK_WINDOW(dialog), 700, 600);
     gtk_window_set_resizable(GTK_WINDOW(dialog), TRUE);
     
     content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
     
-    // Create scrolled window with text view
+    // Create scrolled window with text view that fills entire dialog
     scrolled = gtk_scrolled_window_new(NULL, NULL);
     gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled),
                                    GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+    gtk_widget_set_hexpand(scrolled, TRUE);
+    gtk_widget_set_vexpand(scrolled, TRUE);
+    gtk_widget_set_margin_top(scrolled, 10);
+    gtk_widget_set_margin_bottom(scrolled, 10);
+    gtk_widget_set_margin_left(scrolled, 10);
+    gtk_widget_set_margin_right(scrolled, 10);
     gtk_container_add(GTK_CONTAINER(content_area), scrolled);
     
     textview = gtk_text_view_new();
     gtk_text_view_set_editable(GTK_TEXT_VIEW(textview), FALSE);
     gtk_text_view_set_monospace(GTK_TEXT_VIEW(textview), TRUE);
+    gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(textview), GTK_WRAP_WORD);
+    gtk_widget_set_hexpand(textview, TRUE);
+    gtk_widget_set_vexpand(textview, TRUE);
     gtk_container_add(GTK_CONTAINER(scrolled), textview);
     
     // Get filesystem information for common mount points
