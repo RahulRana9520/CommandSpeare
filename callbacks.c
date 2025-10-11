@@ -1,4 +1,5 @@
 #include "custom_shell.h"
+#include <sys/statvfs.h>
 
 void on_run_clicked(GtkButton *button, gpointer user_data) {
     AppData *app = user_data;
@@ -183,10 +184,16 @@ void on_network_info_clicked(GtkMenuItem *menuitem, gpointer user_data) {
                                                      "_Close", GTK_RESPONSE_CLOSE,
                                                      NULL);
     
-    gtk_window_set_default_size(GTK_WINDOW(dialog), 600, 500);
+    gtk_window_set_default_size(GTK_WINDOW(dialog), 700, 600);
     gtk_window_set_resizable(GTK_WINDOW(dialog), TRUE);
     
     GtkWidget *content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+    
+    // Set margins for content area
+    gtk_widget_set_margin_top(content_area, 10);
+    gtk_widget_set_margin_bottom(content_area, 10);
+    gtk_widget_set_margin_start(content_area, 10);
+    gtk_widget_set_margin_end(content_area, 10);
     
     // Create scrolled window with proper expansion
     GtkWidget *scrolled = gtk_scrolled_window_new(NULL, NULL);
@@ -194,33 +201,66 @@ void on_network_info_clicked(GtkMenuItem *menuitem, gpointer user_data) {
                                    GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
     gtk_widget_set_hexpand(scrolled, TRUE);
     gtk_widget_set_vexpand(scrolled, TRUE);
+    gtk_widget_set_size_request(scrolled, 680, 550);
     
     GtkWidget *textview = gtk_text_view_new();
     gtk_text_view_set_editable(GTK_TEXT_VIEW(textview), FALSE);
     gtk_text_view_set_monospace(GTK_TEXT_VIEW(textview), TRUE);
+    gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(textview), GTK_WRAP_WORD);
     gtk_widget_set_hexpand(textview, TRUE);
     gtk_widget_set_vexpand(textview, TRUE);
+    
+    // Set margins for textview
+    gtk_text_view_set_left_margin(GTK_TEXT_VIEW(textview), 10);
+    gtk_text_view_set_right_margin(GTK_TEXT_VIEW(textview), 10);
+    gtk_text_view_set_top_margin(GTK_TEXT_VIEW(textview), 10);
+    gtk_text_view_set_bottom_margin(GTK_TEXT_VIEW(textview), 10);
+    
     GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(textview));
     
-    // Capture network info output
-    FILE *temp_stdout = freopen("/tmp/network_info.txt", "w", stdout);
-    display_network_info();
-    fclose(temp_stdout);
-    freopen("/dev/tty", "w", stdout); // Restore stdout
+    // Build network information directly
+    char network_info[4096] = "";
+    strcat(network_info, "=== NETWORK INTERFACES ===\n\n");
     
-    // Read and display the captured output
-    FILE *file = fopen("/tmp/network_info.txt", "r");
-    if (file) {
+    FILE *net_dev = fopen("/proc/net/dev", "r");
+    if (net_dev) {
         char line[256];
-        GtkTextIter iter;
-        gtk_text_buffer_get_end_iter(buffer, &iter);
+        // Skip header lines
+        fgets(line, sizeof(line), net_dev);
+        fgets(line, sizeof(line), net_dev);
         
-        while (fgets(line, sizeof(line), file)) {
-            gtk_text_buffer_insert(buffer, &iter, line, -1);
+        while (fgets(line, sizeof(line), net_dev)) {
+            char interface[16];
+            unsigned long rx_bytes, tx_bytes;
+            
+            if (sscanf(line, "%[^:]:%lu %*u %*u %*u %*u %*u %*u %*u %lu", 
+                      interface, &rx_bytes, &tx_bytes) >= 3) {
+                char temp[256];
+                snprintf(temp, sizeof(temp), "Interface: %s\n", interface);
+                strcat(network_info, temp);
+                snprintf(temp, sizeof(temp), "  RX: %lu KB (%lu MB)\n", 
+                        rx_bytes / 1024, rx_bytes / 1024 / 1024);
+                strcat(network_info, temp);
+                snprintf(temp, sizeof(temp), "  TX: %lu KB (%lu MB)\n\n", 
+                        tx_bytes / 1024, tx_bytes / 1024 / 1024);
+                strcat(network_info, temp);
+            }
         }
-        fclose(file);
-        unlink("/tmp/network_info.txt");
+        fclose(net_dev);
     }
+    
+    // Add IP information
+    strcat(network_info, "=== IP INFORMATION ===\n\n");
+    FILE *ip_info = popen("ip addr show 2>/dev/null | head -20", "r");
+    if (ip_info) {
+        char line[256];
+        while (fgets(line, sizeof(line), ip_info)) {
+            strcat(network_info, line);
+        }
+        pclose(ip_info);
+    }
+    
+    gtk_text_buffer_set_text(buffer, network_info, -1);
     
     gtk_container_add(GTK_CONTAINER(scrolled), textview);
     gtk_box_pack_start(GTK_BOX(content_area), scrolled, TRUE, TRUE, 0);
@@ -240,10 +280,16 @@ void on_disk_usage_clicked(GtkMenuItem *menuitem, gpointer user_data) {
                                                      "_Close", GTK_RESPONSE_CLOSE,
                                                      NULL);
     
-    gtk_window_set_default_size(GTK_WINDOW(dialog), 600, 500);
+    gtk_window_set_default_size(GTK_WINDOW(dialog), 700, 600);
     gtk_window_set_resizable(GTK_WINDOW(dialog), TRUE);
     
     GtkWidget *content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+    
+    // Set margins for content area
+    gtk_widget_set_margin_top(content_area, 10);
+    gtk_widget_set_margin_bottom(content_area, 10);
+    gtk_widget_set_margin_start(content_area, 10);
+    gtk_widget_set_margin_end(content_area, 10);
     
     // Create scrolled window with proper expansion
     GtkWidget *scrolled = gtk_scrolled_window_new(NULL, NULL);
@@ -251,37 +297,90 @@ void on_disk_usage_clicked(GtkMenuItem *menuitem, gpointer user_data) {
                                    GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
     gtk_widget_set_hexpand(scrolled, TRUE);
     gtk_widget_set_vexpand(scrolled, TRUE);
+    gtk_widget_set_size_request(scrolled, 680, 550);
     
     GtkWidget *textview = gtk_text_view_new();
     gtk_text_view_set_editable(GTK_TEXT_VIEW(textview), FALSE);
     gtk_text_view_set_monospace(GTK_TEXT_VIEW(textview), TRUE);
+    gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(textview), GTK_WRAP_WORD);
     gtk_widget_set_hexpand(textview, TRUE);
     gtk_widget_set_vexpand(textview, TRUE);
+    
+    // Set margins for textview
+    gtk_text_view_set_left_margin(GTK_TEXT_VIEW(textview), 10);
+    gtk_text_view_set_right_margin(GTK_TEXT_VIEW(textview), 10);
+    gtk_text_view_set_top_margin(GTK_TEXT_VIEW(textview), 10);
+    gtk_text_view_set_bottom_margin(GTK_TEXT_VIEW(textview), 10);
+    
     GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(textview));
     
-    // Add filesystem analysis for common mount points
-    GtkTextIter iter;
-    gtk_text_buffer_get_end_iter(buffer, &iter);
+    // Build disk information directly
+    char disk_info[4096] = "";
+    strcat(disk_info, "=== FILESYSTEM USAGE ===\n\n");
     
-    // Capture filesystem info
-    FILE *temp_stdout = freopen("/tmp/disk_info.txt", "w", stdout);
-    analyze_filesystem("/");
-    analyze_filesystem("/home");
-    analyze_filesystem("/tmp");
-    display_disk_io_stats();
-    fclose(temp_stdout);
-    freopen("/dev/tty", "w", stdout);
+    // Check common mount points
+    const char* paths[] = {"/", "/home", "/tmp", "/var", "/usr", NULL};
+    struct statvfs stats;
     
-    // Read and display
-    FILE *file = fopen("/tmp/disk_info.txt", "r");
-    if (file) {
-        char line[256];
-        while (fgets(line, sizeof(line), file)) {
-            gtk_text_buffer_insert(buffer, &iter, line, -1);
+    for (int i = 0; paths[i]; i++) {
+        if (statvfs(paths[i], &stats) == 0) {
+            unsigned long total = (stats.f_blocks * stats.f_frsize) / (1024 * 1024);
+            unsigned long free = (stats.f_bavail * stats.f_frsize) / (1024 * 1024);
+            unsigned long used = total - free;
+            double usage_percent = total > 0 ? (double)used / total * 100 : 0;
+            
+            char temp[256];
+            snprintf(temp, sizeof(temp), "Mount Point: %s\n", paths[i]);
+            strcat(disk_info, temp);
+            snprintf(temp, sizeof(temp), "  Total Space: %lu MB (%.1f GB)\n", 
+                    total, (double)total / 1024);
+            strcat(disk_info, temp);
+            snprintf(temp, sizeof(temp), "  Used Space:  %lu MB (%.1f GB)\n", 
+                    used, (double)used / 1024);
+            strcat(disk_info, temp);
+            snprintf(temp, sizeof(temp), "  Free Space:  %lu MB (%.1f GB)\n", 
+                    free, (double)free / 1024);
+            strcat(disk_info, temp);
+            snprintf(temp, sizeof(temp), "  Usage:       %.1f%%\n\n", usage_percent);
+            strcat(disk_info, temp);
         }
-        fclose(file);
-        unlink("/tmp/disk_info.txt");
     }
+    
+    // Add disk I/O statistics
+    strcat(disk_info, "=== DISK I/O STATISTICS ===\n\n");
+    FILE *diskstats = fopen("/proc/diskstats", "r");
+    if (diskstats) {
+        char line[256], device[32];
+        unsigned long reads, writes;
+        
+        while (fgets(line, sizeof(line), diskstats)) {
+            if (sscanf(line, "%*d %*d %s %lu %*u %*u %*u %lu", device, &reads, &writes) >= 3) {
+                if (strstr(device, "sd") || strstr(device, "nvme") || strstr(device, "hd")) {
+                    char temp[256];
+                    snprintf(temp, sizeof(temp), "Device: %s\n", device);
+                    strcat(disk_info, temp);
+                    snprintf(temp, sizeof(temp), "  Read Operations:  %lu\n", reads);
+                    strcat(disk_info, temp);
+                    snprintf(temp, sizeof(temp), "  Write Operations: %lu\n\n", writes);
+                    strcat(disk_info, temp);
+                }
+            }
+        }
+        fclose(diskstats);
+    }
+    
+    // Add df command output for additional info
+    strcat(disk_info, "=== DETAILED FILESYSTEM INFO ===\n\n");
+    FILE *df_output = popen("df -h 2>/dev/null | head -10", "r");
+    if (df_output) {
+        char line[256];
+        while (fgets(line, sizeof(line), df_output)) {
+            strcat(disk_info, line);
+        }
+        pclose(df_output);
+    }
+    
+    gtk_text_buffer_set_text(buffer, disk_info, -1);
     
     gtk_container_add(GTK_CONTAINER(scrolled), textview);
     gtk_box_pack_start(GTK_BOX(content_area), scrolled, TRUE, TRUE, 0);
