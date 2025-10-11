@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="20" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+  <!-- Microphone body -->
+  <rect x="7" y="3" width="6" height="8" rx="3" ry="3" fill="white"/>
+  <!-- Microphone stand -->
+  <rect x="9.5" y="11" width="1" height="4" fill="white"/>
+  <!-- Microphone base -->
+  <rect x="6" y="15" width="8" height="1.5" rx="0.7" ry="0.7" fill="white"/>
+  <!-- Sound waves -->
+  <path d="M 4 7 Q 2 10 4 13" stroke="white" stroke-width="1" fill="none"/>
+  <path d="M 16 7 Q 18 10 16 13" stroke="white" stroke-width="1" fill="none"/>
+</svg>

@@ -1,0 +1,23 @@
+# Dependencies and compilation instructions
+
+# Install required packages
+sudo apt update
+sudo apt install build-essential
+sudo apt install libgtk-3-dev
+sudo apt install libpthread-stubs0-dev
+
+# For voice recognition (optional - for production use):
+# sudo apt install libpocketsphinx-dev pocketsphinx-en-us
+# sudo apt install libvosk-dev
+
+# Compile command:
+gcc main.c shell_functions.c callbacks.c utils.c auto_suggest.c voice_recognition.c -o main `pkg-config --cflags --libs gtk+-3.0` -lm -lpthread
+
+# Run:
+./main
+
+# Note: The voice recognition is currently simulated.
+# To implement real voice recognition, integrate one of these libraries:
+# 1. CMU PocketSphinx (offline, lightweight)
+# 2. Vosk (offline, modern, accurate)
+# 3. Google Speech API (online, very accurate)

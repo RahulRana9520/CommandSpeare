@@ -1,0 +1,24 @@
+# Compiled executables
+custom_shell
+main
+main_svg
+
+# Object files
+*.o
+
+# Backup files
+*~
+*.bak
+
+# VSCode settings (optional - you can remove this line if you want to include VSCode settings)
+.vscode/
+
+# Log files
+*.log
+
+# Temporary files
+*.tmp
+
+# OS generated files
+.DS_Store
+Thumbs.db
