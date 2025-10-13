@@ -13,7 +13,7 @@
 
 // ProcessInfo structure is now defined in custom_shell.h
 
-// 1. System Information Functions
+// 1) System Information Functions
 void display_system_info() {
     struct sysinfo info;
     sysinfo(&info);
@@ -23,11 +23,9 @@ void display_system_info() {
     printf("Total RAM: %lu MB\n", info.totalram / 1024 / 1024);
     printf("Free RAM: %lu MB\n", info.freeram / 1024 / 1024);
     printf("Process count: %d\n", info.procs);
-    
-    // Add to GUI with GTK labels
 }
 
-// 2. Process Management
+// 2) Process Management
 void list_processes_detailed() {
     DIR *proc_dir;
     struct dirent *entry;
@@ -37,7 +35,7 @@ void list_processes_detailed() {
     
     proc_dir = opendir("/proc");
     while ((entry = readdir(proc_dir)) != NULL) {
-        pid = atoi(entry->d_name);
+        pid = atoi(entry->d_name);  //atoi string to integer conversion
         if (pid > 0) {
             snprintf(path, sizeof(path), "/proc/%d/status", pid);
             status_file = fopen(path, "r");
@@ -52,14 +50,14 @@ void list_processes_detailed() {
     closedir(proc_dir);
 }
 
-// 3. Memory Management
+// 3) Memory Management
 void display_memory_info() {
     FILE *meminfo = fopen("/proc/meminfo", "r");
     char line[256];
     
     printf("=== MEMORY INFORMATION ===\n");
     while (fgets(line, sizeof(line), meminfo)) {
-        if (strncmp(line, "MemTotal:", 9) == 0 ||
+        if (strncmp(line, "MemTotal:", 9) == 0 ||        //strncmp compares first n characters of two strings               
             strncmp(line, "MemFree:", 8) == 0 ||
             strncmp(line, "MemAvailable:", 13) == 0) {
             printf("%s", line);
@@ -72,7 +70,7 @@ void display_memory_info() {
 void analyze_filesystem(const char *path) {
     struct statvfs stats;
     
-    if (statvfs(path, &stats) == 0) {
+    if (statvfs(path, &stats) == 0) {                //statvfs gets filesystem statistics
         unsigned long total = stats.f_blocks * stats.f_frsize;
         unsigned long free = stats.f_bavail * stats.f_frsize;
         unsigned long used = total - free;
@@ -87,7 +85,7 @@ void analyze_filesystem(const char *path) {
 
 // 5. Network Information
 void display_network_info() {
-    FILE *net_dev = fopen("/proc/net/dev", "r");
+    FILE *net_dev = fopen("/proc/net/dev", "r");   // /proc/net/dev contains network interface statistics
     char line[256];
     
     printf("=== NETWORK INTERFACES ===\n");
