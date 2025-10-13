@@ -1,5 +1,11 @@
 #include "custom_shell.h"
+#define _USE_MATH_DEFINES
 #include <math.h>
+
+// Define M_PI if not already defined
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
 // Function to compile and execute C code from a file (disabled)
 gboolean compile_and_run_c_file(const char *filename, GtkTextBuffer *buffer) {
     GtkTextIter iter;
@@ -115,58 +121,201 @@ double calculate_expression(const char *expr) {
             operators[op_count++] = *pos++;
         }
         else {
-            // Handle simple functions (like sqrt)
+            // Handle mathematical functions
             if (strncmp(pos, "sqrt(", 5) == 0) {
-                char *end = pos + 5;
-                double arg = calculate_expression(end); // Recursively calculate argument
+                pos += 5; // Skip "sqrt("
+                char arg_str[50] = "";
+                int paren_count = 1;
+                int i = 0;
+                
+                // Extract argument until matching closing parenthesis
+                while (*pos && paren_count > 0 && i < 49) {
+                    if (*pos == '(') paren_count++;
+                    else if (*pos == ')') paren_count--;
+                    
+                    if (paren_count > 0) {
+                        arg_str[i++] = *pos;
+                    }
+                    pos++;
+                }
+                arg_str[i] = '\0';
+                
+                double arg = atof(arg_str); // Simple number parsing
                 if (num_count >= 20) {
                     g_free(copy);
                     return 0.0;
                 }
                 numbers[num_count++] = sqrt(arg);
-                // Skip past the function and its argument
-                while (*end && *end != ')') end++;
-                if (*end == ')') end++;
-                pos = end;
             }
             else if (strncmp(pos, "sin(", 4) == 0) {
-                char *end = pos + 4;
-                double arg = calculate_expression(end); // Recursively calculate argument
+                pos += 4; // Skip "sin("
+                char arg_str[50] = "";
+                int paren_count = 1;
+                int i = 0;
+                
+                // Extract argument until matching closing parenthesis
+                while (*pos && paren_count > 0 && i < 49) {
+                    if (*pos == '(') paren_count++;
+                    else if (*pos == ')') paren_count--;
+                    
+                    if (paren_count > 0) {
+                        arg_str[i++] = *pos;
+                    }
+                    pos++;
+                }
+                arg_str[i] = '\0';
+                
+                double arg_degrees = atof(arg_str);
+                double arg_radians = arg_degrees * M_PI / 180.0; // Convert degrees to radians
                 if (num_count >= 20) {
                     g_free(copy);
                     return 0.0;
                 }
-                numbers[num_count++] = sin(arg);
-                // Skip past the function and its argument
-                while (*end && *end != ')') end++;
-                if (*end == ')') end++;
-                pos = end;
+                numbers[num_count++] = sin(arg_radians);
             }
             else if (strncmp(pos, "cos(", 4) == 0) {
-                char *end = pos + 4;
-                double arg = calculate_expression(end); // Recursively calculate argument
+                pos += 4; // Skip "cos("
+                char arg_str[50] = "";
+                int paren_count = 1;
+                int i = 0;
+                
+                // Extract argument until matching closing parenthesis
+                while (*pos && paren_count > 0 && i < 49) {
+                    if (*pos == '(') paren_count++;
+                    else if (*pos == ')') paren_count--;
+                    
+                    if (paren_count > 0) {
+                        arg_str[i++] = *pos;
+                    }
+                    pos++;
+                }
+                arg_str[i] = '\0';
+                
+                double arg_degrees = atof(arg_str);
+                double arg_radians = arg_degrees * M_PI / 180.0; // Convert degrees to radians
                 if (num_count >= 20) {
                     g_free(copy);
                     return 0.0;
                 }
-                numbers[num_count++] = cos(arg);
-                // Skip past the function and its argument
-                while (*end && *end != ')') end++;
-                if (*end == ')') end++;
-                pos = end;
+                numbers[num_count++] = cos(arg_radians);
             }
             else if (strncmp(pos, "tan(", 4) == 0) {
-                char *end = pos + 4;
-                double arg = calculate_expression(end); // Recursively calculate argument
+                pos += 4; // Skip "tan("
+                char arg_str[50] = "";
+                int paren_count = 1;
+                int i = 0;
+                
+                // Extract argument until matching closing parenthesis
+                while (*pos && paren_count > 0 && i < 49) {
+                    if (*pos == '(') paren_count++;
+                    else if (*pos == ')') paren_count--;
+                    
+                    if (paren_count > 0) {
+                        arg_str[i++] = *pos;
+                    }
+                    pos++;
+                }
+                arg_str[i] = '\0';
+                
+                double arg_degrees = atof(arg_str);
+                double arg_radians = arg_degrees * M_PI / 180.0; // Convert degrees to radians
                 if (num_count >= 20) {
                     g_free(copy);
                     return 0.0;
                 }
-                numbers[num_count++] = tan(arg);
-                // Skip past the function and its argument
-                while (*end && *end != ')') end++;
-                if (*end == ')') end++;
-                pos = end;
+                numbers[num_count++] = tan(arg_radians);
+            }
+            // Radian-based functions (for advanced users)
+            else if (strncmp(pos, "sinr(", 5) == 0) {
+                pos += 5; // Skip "sinr("
+                char arg_str[50] = "";
+                int paren_count = 1;
+                int i = 0;
+                
+                while (*pos && paren_count > 0 && i < 49) {
+                    if (*pos == '(') paren_count++;
+                    else if (*pos == ')') paren_count--;
+                    if (paren_count > 0) arg_str[i++] = *pos;
+                    pos++;
+                }
+                arg_str[i] = '\0';
+                
+                double arg_radians = atof(arg_str);
+                if (num_count >= 20) { g_free(copy); return 0.0; }
+                numbers[num_count++] = sin(arg_radians);
+            }
+            else if (strncmp(pos, "cosr(", 5) == 0) {
+                pos += 5; // Skip "cosr("
+                char arg_str[50] = "";
+                int paren_count = 1;
+                int i = 0;
+                
+                while (*pos && paren_count > 0 && i < 49) {
+                    if (*pos == '(') paren_count++;
+                    else if (*pos == ')') paren_count--;
+                    if (paren_count > 0) arg_str[i++] = *pos;
+                    pos++;
+                }
+                arg_str[i] = '\0';
+                
+                double arg_radians = atof(arg_str);
+                if (num_count >= 20) { g_free(copy); return 0.0; }
+                numbers[num_count++] = cos(arg_radians);
+            }
+            else if (strncmp(pos, "tanr(", 5) == 0) {
+                pos += 5; // Skip "tanr("
+                char arg_str[50] = "";
+                int paren_count = 1;
+                int i = 0;
+                
+                while (*pos && paren_count > 0 && i < 49) {
+                    if (*pos == '(') paren_count++;
+                    else if (*pos == ')') paren_count--;
+                    if (paren_count > 0) arg_str[i++] = *pos;
+                    pos++;
+                }
+                arg_str[i] = '\0';
+                
+                double arg_radians = atof(arg_str);
+                if (num_count >= 20) { g_free(copy); return 0.0; }
+                numbers[num_count++] = tan(arg_radians);
+            }
+            // Additional mathematical functions
+            else if (strncmp(pos, "log(", 4) == 0) {
+                pos += 4; // Skip "log("
+                char arg_str[50] = "";
+                int paren_count = 1;
+                int i = 0;
+                
+                while (*pos && paren_count > 0 && i < 49) {
+                    if (*pos == '(') paren_count++;
+                    else if (*pos == ')') paren_count--;
+                    if (paren_count > 0) arg_str[i++] = *pos;
+                    pos++;
+                }
+                arg_str[i] = '\0';
+                
+                double arg = atof(arg_str);
+                if (num_count >= 20) { g_free(copy); return 0.0; }
+                numbers[num_count++] = log10(arg); // Base-10 logarithm
+            }
+            else if (strncmp(pos, "ln(", 3) == 0) {
+                pos += 3; // Skip "ln("
+                char arg_str[50] = "";
+                int paren_count = 1;
+                int i = 0;
+                
+                while (*pos && paren_count > 0 && i < 49) {
+                    if (*pos == '(') paren_count++;
+                    else if (*pos == ')') paren_count--;
+                    if (paren_count > 0) arg_str[i++] = *pos;
+                    pos++;
+                }
+                arg_str[i] = '\0';
+                
+                double arg = atof(arg_str);
+                if (num_count >= 20) { g_free(copy); return 0.0; }
+                numbers[num_count++] = log(arg); // Natural logarithm
             }
             else {
                 pos++; // Skip unknown characters
