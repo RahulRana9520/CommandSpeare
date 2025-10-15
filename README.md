@@ -93,3 +93,15 @@ Made by Rahul, Priyanshu, and Sarthak
 
 ## License
 Open source - feel free to modify and distribute!
+
+
+
+//commands
+1) for pID : echo "my process id is $$"
+2) ls -la : for the directory files info 
+3) cat README.md  ( to print all detail of that file ). 
+4) 
+
+
+//feaure : 
+1) C compile 
