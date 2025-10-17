@@ -84,14 +84,106 @@ void on_history_clicked(GtkButton *button, gpointer user_data) {
     show_history(app);
 }
 
+// Thread function for voice recognition
+gpointer voice_recognition_thread(gpointer user_data) {
+    AppData *app = user_data;
+    
+    // Call the voice recognition function (runs in separate thread)
+    char* recognized_command = recognize_speech_from_mic();
+    
+    // Schedule UI update on the main thread using g_idle_add
+    VoiceResult *result = g_malloc(sizeof(VoiceResult));
+    result->app = app;
+    result->recognized_text = recognized_command; // Transfer ownership
+    
+    g_idle_add((GSourceFunc)voice_recognition_complete, result);
+    
+    return NULL;
+}
+
+// UI update callback (runs on main GTK thread)
+gboolean voice_recognition_complete(gpointer user_data) {
+    VoiceResult *result = (VoiceResult *)user_data;
+    AppData *app = result->app;
+    char *recognized_command = result->recognized_text;
+    
+    // Reset button appearance
+    app->is_recording = FALSE;
+    GtkWidget *mic_image = gtk_image_new_from_file("mic.svg");
+    gtk_button_set_image(GTK_BUTTON(app->voice_button), mic_image);
+    
+    GtkTextIter iter;
+    
+    if (recognized_command) {
+        // Show recognized command with visual confirmation
+        gtk_text_buffer_get_end_iter(app->buffer, &iter);
+        gtk_text_buffer_insert(app->buffer, &iter, "🎯 Voice Recognized: ", -1);
+        gtk_text_buffer_insert_with_tags_by_name(app->buffer, &iter, recognized_command, -1, "ls", NULL);
+        gtk_text_buffer_insert(app->buffer, &iter, "\n", -1);
+        
+        // Try to suggest corrections if it looks wrong
+        char* typo_fix = suggest_typo_fix(recognized_command);
+        if (typo_fix) {
+            gtk_text_buffer_insert(app->buffer, &iter, "💡 Did you mean: ", -1);
+            gtk_text_buffer_insert_with_tags_by_name(app->buffer, &iter, typo_fix, -1, "cd", NULL);
+            gtk_text_buffer_insert(app->buffer, &iter, " ? (Edit above if needed)\n", -1);
+            
+            // Put the corrected version in entry
+            gtk_entry_set_text(GTK_ENTRY(app->entry), typo_fix);
+            g_free(typo_fix);
+        } else {
+            // Put the recognized command into the entry for user confirmation
+            gtk_entry_set_text(GTK_ENTRY(app->entry), recognized_command);
+        }
+        
+        gtk_editable_set_position(GTK_EDITABLE(app->entry), -1);
+
+        // Show hint to user to run it
+        gtk_text_buffer_get_end_iter(app->buffer, &iter);
+        gtk_text_buffer_insert(app->buffer, &iter, "▶️  Review command above, then press Enter to execute.\n", -1);
+
+        g_free(recognized_command);
+    } else {
+        // Voice recognition failed
+        gtk_text_buffer_get_end_iter(app->buffer, &iter);
+        gtk_text_buffer_insert(app->buffer, &iter, "❌ Voice recognition failed or cancelled\n", -1);
+        gtk_text_buffer_insert(app->buffer, &iter, "💡 Speak clearly and loudly, ensure good microphone input.\n", -1);
+    }
+    
+    // Scroll to bottom to show results
+    gtk_text_buffer_get_end_iter(app->buffer, &iter);
+    gtk_text_view_scroll_to_iter(GTK_TEXT_VIEW(app->textview), &iter, 0.0, FALSE, 0.0, 0.0);
+    
+    // Clean up
+    g_free(result);
+    
+    return FALSE; // Remove this idle callback after execution
+}
+
 void on_voice_clicked(GtkButton *button, gpointer user_data) {
     AppData *app = user_data;
     
-    if (!app->is_recording) {
-        start_voice_recognition(app);
-    } else {
-        stop_voice_recognition(app);
+    // Prevent multiple simultaneous voice recognition attempts
+    if (app->is_recording) {
+        return;
     }
+    
+    app->is_recording = TRUE;
+    
+    // Update button appearance
+    GtkWidget *mic_rec_image = gtk_image_new_from_file("mic_rec.svg");
+    gtk_button_set_image(GTK_BUTTON(app->voice_button), mic_rec_image);
+    
+    // Show status in terminal
+    GtkTextIter iter;
+    gtk_text_buffer_get_end_iter(app->buffer, &iter);
+    gtk_text_buffer_insert(app->buffer, &iter, "🎤 Voice Recognition Starting...\n", -1);
+    
+    // Scroll to bottom
+    gtk_text_view_scroll_to_iter(GTK_TEXT_VIEW(app->textview), &iter, 0.0, FALSE, 0.0, 0.0);
+    
+    // Run voice recognition in a separate thread to keep UI responsive
+    g_thread_new("voice_recognition", voice_recognition_thread, app);
 }
 
 gboolean on_entry_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_data) {

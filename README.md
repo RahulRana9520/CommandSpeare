@@ -13,12 +13,20 @@ A feature-rich custom shell built with GTK+3 in C, featuring voice recognition a
 
 ### New Features
 - **🎤 Voice Recognition**: Click the microphone button to speak commands
+  - Improved accuracy with noise reduction
+  - Auto-correction for misheard commands
+  - Visual confirmation of what was recognized
 - **💡 Smart Auto-Suggestions**: Real-time command suggestions as you type
   - Suggests built-in commands
   - Suggests from command history
   - Suggests files/directories for relevant commands
   - Navigate suggestions with arrow keys
   - Apply suggestions with Tab key
+- **🔧 Smart Error Correction**: When commands fail, get helpful suggestions
+  - Typo detection (e.g., "sl" → suggests "ls")
+  - Fuzzy matching with common commands
+  - Levenshtein distance algorithm for similarity
+  - Works for both typed and voice commands
 
 ## Installation
 
@@ -49,28 +57,45 @@ gcc main.c shell_functions.c callbacks.c utils.c auto_suggest.c voice_recognitio
 
 ### Voice Recognition
 1. Click the **🎤 Voice** button
-2. Speak your command clearly
-3. The recognized text appears in the input field
-4. Press Enter or click "Run Command" to execute
+2. Speak your command clearly for 3 seconds
+3. The transcribed text appears with visual confirmation
+4. **Auto-correction**: If the command looks wrong, you'll see a suggestion
+5. Review/edit the text if needed
+6. Press Enter or click "Run Command" to execute
 
-**Note**: The current implementation uses simulated voice recognition. For production use, integrate a real speech recognition library like PocketSphinx, Vosk, or Google Speech API.
+**How it works**:
+- Uses Google Web Speech API (free, accurate) via Python's SpeechRecognition library
+- **Noise reduction** and ambient adjustment for better accuracy
+- Fixes common transcription errors (e.g., "ls - la" → "ls -la")
+- **Auto-converts to lowercase** (Google says "PWD" → becomes "pwd")
+- **Smart suggestions**: If you say "celar", it suggests "clear"
+- Transcribes ANY spoken text verbatim (commands, questions, nonsense, etc.)
+- Valid commands execute normally; invalid text produces shell errors naturally
+- UI remains responsive during recording (runs in separate thread)
 
-## Implementing Real Voice Recognition
-
-### Option 1: PocketSphinx (Offline)
+**Requirements**:
 \`\`\`bash
-sudo apt install libpocketsphinx-dev pocketsphinx-en-us
+pip3 install SpeechRecognition --break-system-packages
 \`\`\`
-Update `voice_recognition.c` to use PocketSphinx API.
 
-### Option 2: Vosk (Offline, Modern)
-\`\`\`bash
-# Download Vosk library and models from https://alphacephei.com/vosk/
-\`\`\`
-Integrate Vosk API in `voice_recognition.c`.
+## Voice Recognition Architecture
 
-### Option 3: Google Speech API (Online)
-Use libcurl to send audio to Google Speech API and parse JSON response.
+The voice recognition system uses a hybrid Python/C approach:
+
+**Workflow**:
+1. C code (`voice_recognition.c`) records 3 seconds of audio using `parecord` or `arecord`
+2. Python helper script (`stt_helper.py`) transcribes audio using Google Web Speech API
+3. Transcribed text is returned to C code and displayed in prompt box
+4. User presses Enter to execute the command
+
+**Fallback Support**:
+- Primary: Google Web Speech API (free, requires internet)
+- Fallback: PocketSphinx (offline, install via: `pip3 install pocketsphinx`)
+
+**Key Design Choice**:
+- Pure transcription mode - NO pattern matching or command learning
+- Speaks exactly what you say into the prompt box
+- Shell naturally handles invalid commands with error messages
 
 ## Built-in Commands
 - `cd [path]` - Change directory

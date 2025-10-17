@@ -544,9 +544,35 @@ void execute_command(const char *command, GtkTextBuffer *buffer, GtkTextView *te
         if (status != 0) {
             char status_str[32];
             snprintf(status_str, sizeof(status_str), "%d", WEXITSTATUS(status));
-            gtk_text_buffer_insert(buffer, &iter, "Command exited with non-zero status: ", -1);
-            gtk_text_buffer_insert(buffer, &iter, status_str, -1);
-            gtk_text_buffer_insert(buffer, &iter, "\n", -1);
+            
+            // Check if it was "command not found" error (exit code 127)
+            if (WEXITSTATUS(status) == 127) {
+                gtk_text_buffer_insert(buffer, &iter, "\n💡 ", -1);
+                
+                // Try to suggest a typo fix first
+                char* typo_fix = suggest_typo_fix(start);
+                if (typo_fix) {
+                    gtk_text_buffer_insert(buffer, &iter, "Did you mean: ", -1);
+                    gtk_text_buffer_insert_with_tags_by_name(buffer, &iter, typo_fix, -1, "ls", NULL);
+                    gtk_text_buffer_insert(buffer, &iter, " ?\n", -1);
+                    g_free(typo_fix);
+                } else {
+                    // Try fuzzy matching with common commands
+                    char* suggestion = suggest_command(start);
+                    if (suggestion) {
+                        gtk_text_buffer_insert(buffer, &iter, "Did you mean: ", -1);
+                        gtk_text_buffer_insert_with_tags_by_name(buffer, &iter, suggestion, -1, "ls", NULL);
+                        gtk_text_buffer_insert(buffer, &iter, " ?\n", -1);
+                        g_free(suggestion);
+                    } else {
+                        gtk_text_buffer_insert(buffer, &iter, "Command not found. Type 'help' for available commands.\n", -1);
+                    }
+                }
+            } else {
+                gtk_text_buffer_insert(buffer, &iter, "Command exited with status: ", -1);
+                gtk_text_buffer_insert(buffer, &iter, status_str, -1);
+                gtk_text_buffer_insert(buffer, &iter, "\n", -1);
+            }
         }
     }
 

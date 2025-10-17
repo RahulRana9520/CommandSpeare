@@ -18,6 +18,18 @@
 #define MAX_SUGGESTIONS 10
 #define MAX_BUILTIN_COMMANDS 7
 
+// Audio analysis results structure - must be declared early for function declarations
+typedef struct {
+    double energy_level;
+    double duration_seconds;
+    double frequency_peak;
+    double voice_probability;
+    double confidence;
+    double noise_ratio;
+    int voice_segments;
+    double pitch_variation;
+} AudioAnalysis;
+
 typedef struct {
     GtkWidget *window;
     GtkWidget *entry;
@@ -42,6 +54,12 @@ typedef struct {
     gboolean is_recording;
 } AppData;
 
+// Structure for passing voice recognition results between threads
+typedef struct {
+    AppData *app;
+    char *recognized_text;
+} VoiceResult;
+
 // Function declarations
 void execute_command(const char *command, GtkTextBuffer *buffer, GtkTextView *textview);
 void apply_css(AppData *app, const char *css);
@@ -54,6 +72,8 @@ void on_time_clicked(GtkMenuItem *menuitem, gpointer user_data);
 void on_theme_clicked(GtkButton *button, gpointer user_data);
 void on_history_clicked(GtkButton *button, gpointer user_data);
 void on_voice_clicked(GtkButton *button, gpointer user_data);
+gpointer voice_recognition_thread(gpointer user_data);
+gboolean voice_recognition_complete(gpointer user_data);
 gboolean on_entry_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_data);
 void on_entry_changed(GtkEditable *editable, gpointer user_data);
 void on_window_destroy(GtkWidget *widget, gpointer user_data);
@@ -69,9 +89,42 @@ void hide_suggestions(AppData *app);
 void apply_suggestion(AppData *app, int index);
 void clear_suggestions(AppData *app);
 
-void start_voice_recognition(AppData *app);
-void stop_voice_recognition(AppData *app);
+// Command similarity and correction
+char* suggest_command(const char* wrong_command);
+char* suggest_typo_fix(const char* text);
+gboolean command_exists_in_path(const char* command);
+
+// Main voice recognition function - called directly from button click
 char* recognize_speech_from_mic(void);
+
+// Advanced voice recognition functions
+int record_audio_robust(const char* output_file, int duration_seconds);
+int check_audio_file_valid(const char* filename);
+int analyze_audio_advanced(const char* audio_file, AudioAnalysis* analysis);
+int detect_voice_segments(short* samples, size_t count);
+double estimate_fundamental_frequency(short* samples, size_t count);
+double calculate_voice_confidence(AudioAnalysis* analysis);
+
+// Optional external STT integration (Pocketsphinx/Vosk/Whisper if installed)
+int try_external_stt(const char* wav_file, char* out_text, size_t out_len);
+
+// Voice pattern matching
+void initialize_default_patterns(void);
+void add_voice_pattern(const char* command, double freq, double energy, double duration);
+char* match_voice_pattern(AudioAnalysis* analysis);
+void update_voice_pattern(const char* command, AudioAnalysis* analysis);
+
+// Voice profile management  
+void load_voice_profile(void);
+void save_voice_profile(void);
+
+// Interactive learning
+char* interactive_command_learning(AudioAnalysis* analysis);
+void learn_new_pattern(const char* command, AudioAnalysis* analysis);
+char* voice_training_session(void);
+char* voice_fallback_system(void);
+
+// AudioAnalysis structure already declared above
 
 // Kernel-level function declarations
 typedef struct {
