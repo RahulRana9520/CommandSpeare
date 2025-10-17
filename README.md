@@ -125,7 +125,7 @@ Open source - feel free to modify and distribute!
 1) for pID : echo "my process id is $$"
 2) ls -la : for the directory files info 
 3) cat README.md  ( to print all detail of that file ). 
-4) 
+4) command suggestion
 
 
 //feaure : 
