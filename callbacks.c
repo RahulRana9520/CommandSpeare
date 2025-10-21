@@ -42,7 +42,7 @@ void on_run_clicked(GtkButton *button, gpointer user_data) {
     
     g_free(cmd_copy);
     
-    execute_command(command, app->buffer, app->textview);
+    execute_command(app, command, app->buffer, app->textview);
     
     gtk_text_buffer_get_end_iter(app->buffer, &iter);
     GtkTextMark *mark = gtk_text_buffer_create_mark(app->buffer, "end", &iter, FALSE);

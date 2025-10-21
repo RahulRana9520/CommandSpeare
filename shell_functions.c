@@ -343,7 +343,7 @@ double calculate_expression(const char *expr) {
     return result;
 }
 
-void execute_command(const char *command, GtkTextBuffer *buffer, GtkTextView *textview) {
+void execute_command(AppData *app, const char *command, GtkTextBuffer *buffer, GtkTextView *textview) {
     GtkTextIter iter;
     if (strlen(command) > MAX_COMMAND_LENGTH) {
         gtk_text_buffer_get_end_iter(buffer, &iter);
@@ -398,6 +398,24 @@ void execute_command(const char *command, GtkTextBuffer *buffer, GtkTextView *te
 
     if (strlen(start) > 2 && strcmp(start + strlen(start) - 2, ".c") == 0) {
         compile_and_run_c_file(start, buffer);
+        g_free(sanitized_command);
+        return;
+    }
+
+    // Custom GUI commands (handled internally)
+    if (strcmp(start, "system_info") == 0) {
+        GtkWidget *dialog = create_system_info_dialog(GTK_WINDOW(app->window));
+        if (dialog) {
+            gtk_widget_show_all(dialog);
+            gtk_dialog_run(GTK_DIALOG(dialog));
+            gtk_widget_destroy(dialog);
+        }
+        g_free(sanitized_command);
+        return;
+    }
+
+    if (strcmp(start, "custom_menu") == 0 || strcmp(start, "custom_commands") == 0) {
+        open_custom_command_page(app);
         g_free(sanitized_command);
         return;
     }

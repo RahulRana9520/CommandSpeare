@@ -61,7 +61,7 @@ typedef struct {
 } VoiceResult;
 
 // Function declarations
-void execute_command(const char *command, GtkTextBuffer *buffer, GtkTextView *textview);
+void execute_command(AppData *app, const char *command, GtkTextBuffer *buffer, GtkTextView *textview);
 void apply_css(AppData *app, const char *css);
 void cycle_theme(AppData *app);
 void add_to_history(AppData *app, const char *command);
@@ -170,5 +170,15 @@ void on_filesystem_monitor_clicked(GtkMenuItem *menuitem, gpointer user_data);
 void on_process_manager_clicked(GtkMenuItem *menuitem, gpointer user_data);
 void on_network_info_clicked(GtkMenuItem *menuitem, gpointer user_data);
 void on_disk_usage_clicked(GtkMenuItem *menuitem, gpointer user_data);
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// Entry point for custom command page (hamburger menu) - GTK aware
+void open_custom_command_page(AppData *app);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // CUSTOM_SHELL_H
