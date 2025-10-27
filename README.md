@@ -128,5 +128,6 @@ Open source - feel free to modify and distribute!
 4) command suggestion
 
 
-//feaure : 
-1) C compile 
+want this app on your laptop ? 
+step1:- put all code of command shell on your pc .
+step2:- run these command : chmod +x setup.sh && ./setup.sh
